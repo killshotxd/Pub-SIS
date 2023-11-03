@@ -1,8 +1,8 @@
-import { collection, getDoc, getDocs } from "firebase/firestore";
+import { collection, deleteDoc, getDoc, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../../../../Firebase";
 import { useNavigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { BiBorderAll, BiEdit, BiTrash } from "react-icons/bi";
 import { doc } from "firebase/firestore";
 const ListOrders = () => {
@@ -11,7 +11,8 @@ const ListOrders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pages, setPages] = useState(null);
   const itemsPerPage = 7;
-
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState(null);
   //   FETCH Products FROM DB
 
   // const fetchApprovals = async () => {
@@ -64,6 +65,7 @@ const ListOrders = () => {
       await Promise.all(
         querySnapshot.docs.map(async (docss) => {
           const approvalData = docss.data();
+          const approvalDid = docss.id;
           console.log(approvalData);
 
           // Check if there are orders in the approval data
@@ -71,6 +73,7 @@ const ListOrders = () => {
             // Fetch school data for each school associated with this approval
             const schoolPromises = approvalData.orders.map(async (order) => {
               const schoolId = order.addedById;
+
               if (schoolId) {
                 const schoolRef = doc(db, "Schools", schoolId);
                 const schoolSnapshot = await getDoc(schoolRef);
@@ -100,7 +103,8 @@ const ListOrders = () => {
               approvalsList.push({
                 ...approvalData,
                 orders: validSchoolResults,
-                schoolData: schoolData, // Add schoolData property here
+                schoolData: schoolData,
+                did: approvalDid, // Add schoolData property here
               });
             }
           }
@@ -125,7 +129,47 @@ const ListOrders = () => {
   useEffect(() => {
     fetchApprovals();
   }, [currentPage]);
+  const handleDelete = async (item) => {
+    try {
+      const docRef = doc(db, "approve", item.did);
+      await deleteDoc(docRef);
+      fetchApprovals();
 
+      try {
+        item.orders.forEach(async (element) => {
+          const cartRef = doc(db, "cart", item.did, "items", element.did);
+          await deleteDoc(cartRef);
+        });
+      } catch (error) {
+        console.log(error);
+      }
+      toast.success("Approval Deleted Successfully !");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeleteModal = (product) => {
+    // Find the product to delete based on productId
+
+    // Set the product to delete and open the modal
+    setOrderToDelete(product);
+    setDeleteModalOpen(true);
+  };
+  const confirmDelete = () => {
+    // Call your delete function here with productToDelete
+    // ...
+    handleDelete(orderToDelete);
+    // Close the modal
+    setDeleteModalOpen(false);
+    setOrderToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    // Close the modal without deleting
+    setDeleteModalOpen(false);
+    setOrderToDelete(null);
+  };
   return (
     <>
       <Toaster />
@@ -150,7 +194,8 @@ const ListOrders = () => {
               <tbody className="text-gray-600 divide-y">
                 {itemsToDisplay?.map((item, idx) => (
                   <>
-                    <tr key={item.did}>
+                    {console.log(item)}
+                    <tr key={idx + 1}>
                       <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
                         <img
                           src={item?.schoolData?.avatar}
@@ -160,9 +205,9 @@ const ListOrders = () => {
                           <span className="block text-gray-700 text-sm font-medium">
                             {item?.schoolData?.name}
                           </span>
-                          {/* <span className="block text-gray-700 text-xs">
-                      {item.email}
-                    </span> */}
+                          <span className="block text-gray-700 text-xs">
+                            {item.schoolData.email}
+                          </span>
                         </div>
                       </td>
 
@@ -178,7 +223,13 @@ const ListOrders = () => {
                             }
                             className="btn btn-xs  hover:bg-info hover:text-white"
                           >
-                            <BiBorderAll />
+                            <BiBorderAll /> open
+                          </button>
+                          <button
+                            onClick={() => handleDeleteModal(item)}
+                            className="btn btn-xs hover:bg-red-400 hover:text-white"
+                          >
+                            <BiTrash /> delete
                           </button>
                         </div>
                       </td>
@@ -235,6 +286,51 @@ const ListOrders = () => {
             </div>
           </div>
         </>
+      )}
+
+      {isDeleteModalOpen && orderToDelete && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Product
+                </h3>
+                <p>
+                  Are you sure you want to delete the approval:{" "}
+                  {orderToDelete?.schoolData.name} with{" "}
+                  {orderToDelete.orders.length} Products?
+                </p>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  onClick={confirmDelete}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Yes, Delete
+                </button>
+                <button
+                  onClick={cancelDelete}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  No, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

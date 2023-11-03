@@ -1,8 +1,12 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
+  getDoc,
   getDocs,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../../../../Firebase";
@@ -94,7 +98,7 @@ const SchoolProducts = () => {
         toast.error("Item already exists in cart!");
         return;
       }
-      const totalPrice = parseInt(product.price);
+      const totalPrice = parseFloat(product.price);
 
       const cartData = {
         image: product.image,
@@ -105,15 +109,125 @@ const SchoolProducts = () => {
         description: product.description,
         addedAt: serverTimestamp(),
         addedById: uid,
+        pid: product.did,
       };
 
       await addDoc(collection(db, "cart", `${uid}/items`), cartData);
       toast.success("Item added to cart!");
+      navigate("/cart");
     } catch (error) {
       console.log(error);
     }
   };
 
+  const addToFav = async (res) => {
+    console.log(res);
+    const email = localStorage.getItem("email");
+
+    const cartRef = collection(db, "Favorites", `${email}/items`);
+    const querySnapshot = await getDocs(cartRef);
+    const cartItems = querySnapshot.docs.map((doc) => doc.data());
+    // Check if item already exists in cart
+    const existingItem = cartItems.find(
+      (item) => item.id === res.id && item.name === res.name
+    );
+    if (existingItem) {
+      toast.error("Product already exists in Favorites!");
+      return;
+    }
+    try {
+      const favRef = collection(db, `Favorites/${email}/items`);
+
+      await addDoc(favRef, res, { merge: true });
+      toast.success("Product is added to Favorites !");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSingleProductOrder = async (product) => {
+    try {
+      const currentUserEmail = localStorage.getItem("email");
+
+      // Check if the user is authenticated
+      if (!currentUserEmail) {
+        // Handle unauthenticated user (e.g., redirect to login page)
+        console.error("User is not authenticated");
+        return;
+      }
+
+      const schoolEmail = localStorage.getItem("email"); // Replace with the actual field name
+      const totalPrice = parseFloat(product.price);
+      // Create a reference to the batch in the "approve" collection for this school
+      const batchRef = doc(db, "approve", schoolEmail);
+      const cartData = {
+        pid: product.did,
+        did: product.did,
+        image: product.image,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        total: totalPrice,
+        description: product.description,
+        addedAt: new Date().toLocaleDateString(),
+        addedById: schoolEmail,
+      };
+      // Check if the batch with the school's email exists in the "approve" collection
+      const batchSnapshot = await getDoc(batchRef);
+      const existingBatch = batchSnapshot.exists()
+        ? batchSnapshot.data()
+        : null;
+
+      if (existingBatch) {
+        // Find the index of the order within the batch, if it exists
+        const orderIndex = existingBatch.orders.findIndex(
+          (order) => order.id === product.id && order.name === product.name
+        );
+
+        if (orderIndex !== -1) {
+          // Update the existing order within the batch
+          existingBatch.orders[orderIndex] = cartData;
+        } else {
+          // Add the new order to the batch
+          existingBatch.orders.push(cartData);
+        }
+
+        // Update the batch document
+        await setDoc(batchRef, existingBatch);
+      } else {
+        // Create a new batch with the product as the first order
+        await setDoc(batchRef, { orders: [cartData] });
+      }
+
+      // You can send an order confirmation email here if needed.
+
+      toast.success("Order Sent for Approval!");
+
+      // You can make the API call to notify someone about the order
+      try {
+        const res = await fetch(
+          "https://mail-api-l2xn.onrender.com/place-order",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              products: [cartData], // Send only the single product
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await res.json();
+        console.log(data);
+      } catch (error) {
+        console.log(error);
+      }
+    } catch (error) {
+      console.error("Error handling single product order: ", error);
+    }
+  };
+  console.log(products);
   return (
     <>
       <Toaster />
@@ -134,7 +248,7 @@ const SchoolProducts = () => {
         {filteredProducts?.map((res, i) => (
           <>
             {!res?.visibleCheck && (
-              <div key={i} className="rounded-md border">
+              <div key={i + 1} className="rounded-md border">
                 <img
                   src={res.image}
                   alt={res.name}
@@ -157,6 +271,22 @@ const SchoolProducts = () => {
                     className="mt-4 w-full rounded-sm bg-black px-2 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
                   >
                     Add to Cart
+                  </button>
+                  {/* <button
+                    onClick={() => {
+                      handleSingleProductOrder(res);
+                    }}
+                    type="button"
+                    className="mt-4 w-full rounded-sm bg-green-500 px-2 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Order Now
+                  </button> */}
+                  <button
+                    onClick={() => addToFav(res)}
+                    type="button"
+                    className="mt-4 w-full rounded-sm bg-orange-600 px-2 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-600focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Add to Favorites
                   </button>
                   <button
                     onClick={() =>

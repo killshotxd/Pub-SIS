@@ -1,16 +1,15 @@
+import { doc } from "firebase/firestore";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AiFillCloseCircle } from "react-icons/ai";
-import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../Firebase";
 import toast, { Toaster } from "react-hot-toast";
 import { BiLeftArrowAlt } from "react-icons/bi";
-const OrderStatus = () => {
+
+const BuyerOrderStatus = () => {
   const location = useLocation();
   const state = location.state;
   const [isModal, setIsModal] = useState(true);
   const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
   console.log(state);
   const navigate = useNavigate();
   const handleUpdateStatus = async () => {
@@ -21,55 +20,6 @@ const OrderStatus = () => {
     }
   };
 
-  const handleUpdate = async () => {
-    setLoading(true);
-    if (!status) {
-      toast.error("Please Select a Status !");
-      return;
-    }
-    try {
-      const docRef = doc(
-        db,
-        `orders/${state.schoolInfo.email}/Orders/${state.id}`
-      );
-
-      // Update the 'status' field in the document
-      await updateDoc(docRef, {
-        status: status, // Replace 'NewStatusHere' with the new status value
-      });
-      try {
-        const res = await fetch(
-          "https://mail-api-l2xn.onrender.com/send-approval-mail",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              status: status,
-              orders: state.orders,
-            }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const data = await res.json();
-        console.log(data);
-      } catch (error) {
-        console.error("Error sending confirmation emails:", error);
-      }
-
-      toast.success("Status updated successfully.");
-      setLoading(false);
-      setTimeout(() => {
-        navigate("/confirmed-orders");
-      }, 800);
-      // Log a success message
-      console.log("Status updated successfully.");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   console.log(status);
   return (
     <>
@@ -77,7 +27,7 @@ const OrderStatus = () => {
 
       <div className="  flex justify-end">
         <button
-          onClick={() => navigate("/confirmed-orders")}
+          onClick={() => navigate("/buyer-orders")}
           className="btn btn-neutral "
         >
           <BiLeftArrowAlt /> Go Back
@@ -127,9 +77,9 @@ const OrderStatus = () => {
             <small>{state?.schoolInfo?.zip_code}</small>
           </div>
           {/* <div className=" pl-4">
-            <p className="font-semibold">Phone Number</p>
-            <small>{studentDetail?.number}</small>
-          </div> */}
+              <p className="font-semibold">Phone Number</p>
+              <small>{studentDetail?.number}</small>
+            </div> */}
         </div>
 
         <div className="items-center justify-start pb-4 mt-6 flex w-full">
@@ -142,8 +92,6 @@ const OrderStatus = () => {
                 <tr>
                   <th className="py-3 px-6">Sr No</th>
                   <th className="py-3 px-6">Name</th>
-                  <th className="py-3 px-6">Quantity</th>
-                  <th className="py-3 px-6">Unit</th>
 
                   <th className="py-3 px-6">Price</th>
                   <th className="py-3 px-6">Status</th>
@@ -164,18 +112,13 @@ const OrderStatus = () => {
                           {item.name}
                         </span>
                         {/* <span className="block text-gray-700 text-xs">
-                      {item.email}
-                    </span> */}
+                        {item.email}
+                      </span> */}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.quantity}
-                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       ${item.price}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      ${item.total}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {state?.status}
@@ -191,53 +134,12 @@ const OrderStatus = () => {
         <div className="flex flex-col">
           <div className=" px-4 py-6 flex justify-end">
             <div className="flex items-center gap-4">
-              <label
-                htmlFor="my_modal_7"
-                onClick={() => handleUpdateStatus()}
-                className="btn btn-neutral "
-                disabled={state.status === "Cancelled"}
-              >
-                Update Status
-              </label>
               <button
-                onClick={() => navigate("/invoice", { state: state })}
+                onClick={() => navigate("/buyer-invoice", { state: state })}
                 className="btn btn-accent text-white "
               >
                 Download Invoice
               </button>
-            </div>
-
-            <input type="checkbox" id="my_modal_7" className="modal-toggle" />
-            <div className="modal">
-              <div className="modal-box">
-                <h3 className="text-lg font-bold">Update Status</h3>
-                <div className="py-4">
-                  <select
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="select select-bordered w-full max-w-xs"
-                  >
-                    <option disabled selected>
-                      Select Status
-                    </option>
-                    <option value="On-Route">On-Route</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
-
-                <div className="py-4">
-                  <button
-                    disabled={loading}
-                    onClick={() => handleUpdate()}
-                    className="btn btn-accent text-white"
-                  >
-                    Update
-                  </button>
-                </div>
-              </div>
-              <label className="modal-backdrop" htmlFor="my_modal_7">
-                Close
-              </label>
             </div>
           </div>
         </div>
@@ -246,4 +148,4 @@ const OrderStatus = () => {
   );
 };
 
-export default OrderStatus;
+export default BuyerOrderStatus;

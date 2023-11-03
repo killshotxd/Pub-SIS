@@ -12,7 +12,7 @@ import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { auth, db } from "../../../Firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
 // create context
 const AuthContext = createContext();
 
@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }) => {
 
   // SIGN UP
   const signUpGoogle = async (email, password) => {
+    const schoolRef = doc(db, "Schools", email);
     const auth = getAuth();
     try {
       const response = await createUserWithEmailAndPassword(
@@ -60,6 +61,13 @@ export const AuthProvider = ({ children }) => {
       );
       // setCurrentUser(response.user);
       console.log(response);
+      const data = response.user;
+
+      console.log(data);
+      setTimeout(() => {
+        updateDoc(schoolRef, { uid: data.uid }, { merge: true });
+      }, 1000);
+
       // localStorage.setItem("email", response?.user?.email);
       // localStorage.setItem("uid", response?.user?.uid);
       return response.user;

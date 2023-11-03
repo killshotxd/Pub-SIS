@@ -17,7 +17,11 @@ const AddSchools = () => {
   //IMAGE UPLOAD TO FIREBASE STATES
   const imagePicker = useRef();
   const [progress, setProgress] = useState(0);
-  const [imageUrl, setImageUrl] = useState("");
+  const [schoolMails, setSchoolMails] = useState([]);
+  const [batchEmail, setBatchEmail] = useState("");
+  const [imageUrl, setImageUrl] = useState(
+    "https://firebasestorage.googleapis.com/v0/b/school-inventory-management.appspot.com/o/Default%2Fdownload%20(1).png?alt=media&token=30cc7f78-7bb7-4508-964a-080efbb84e19&_gl=1*bxdxdz*_ga*ODM0NzE4MTczLjE2OTQyNzM5NjQ.*_ga_CW55HF8NVT*MTY5NzgwNjY0NS4xMzEuMS4xNjk3ODA2OTk4LjE4LjAuMA.."
+  );
   const [profileImageUploadStarted, setProfileImageUploadStarted] =
     useState(false);
   //IMAGE UPLOAD TO FIREBASE STATES
@@ -120,6 +124,7 @@ const AddSchools = () => {
         city: city,
         zip_code: zip,
         isAdmin: false,
+        message: `Welcome, ${name}`,
         time: serverTimestamp(),
       };
 
@@ -132,6 +137,31 @@ const AddSchools = () => {
       }
 
       await setDoc(schoolRef, schoolDetails, { merge: true });
+
+      try {
+        const res = await fetch(
+          "https://mail-api-l2xn.onrender.com/send-credentials",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              school: {
+                name: name,
+                email: email,
+                password: password,
+                schoolMails: schoolMails,
+              }, // Send only the single product
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await res.json();
+        console.log(data);
+      } catch (error) {
+        console.log(error);
+      }
       toast.success("School Added successfully!");
 
       setName("");
@@ -147,6 +177,21 @@ const AddSchools = () => {
       console.log(error);
     }
   };
+
+  const addEmail = () => {
+    if (batchEmail) {
+      // Check if the email is not empty
+      setSchoolMails([...schoolMails, batchEmail]);
+      setBatchEmail(""); // Clear the input field
+    }
+  };
+  const removeEmail = (index) => {
+    const updatedEmails = [...schoolMails];
+    updatedEmails.splice(index, 1);
+    setSchoolMails(updatedEmails);
+  };
+
+  console.log(schoolMails);
   return (
     <>
       <Toaster />
@@ -188,7 +233,7 @@ const AddSchools = () => {
           <div>
             <label htmlFor="number">School Phone Number</label>
             <input
-              type="number"
+              type="text"
               value={phone}
               onChange={(e) => {
                 // Limit the phone number to a maximum of 15 characters
@@ -196,9 +241,6 @@ const AddSchools = () => {
                   setPhone(e.target.value);
                 }
               }}
-              minLength="6"
-              maxLength="15"
-              pattern="[0-9]{6,15}"
               id="number"
               placeholder="School Phone Number"
               className="w-full pl-3 pr-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
@@ -305,6 +347,42 @@ const AddSchools = () => {
             <figure>
               <input className="w-1/2 " type="image" src={imageUrl} alt="" />
             </figure>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="batchEmail">
+            Add school emails for sending credentials
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="email"
+              value={batchEmail}
+              onChange={(e) => setBatchEmail(e.target.value)}
+              id="batchEmail"
+              placeholder="Enter School Email"
+              className="w-full pl-3 pr-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
+            />
+            <button className="btn btn-info text-white" onClick={addEmail}>
+              Add Email
+            </button>
+          </div>
+
+          <div>
+            <h3 className="font-semibold">School Batch Emails :</h3>
+            <ul>
+              {schoolMails.map((email, index) => (
+                <li key={index}>
+                  {index + 1} - {email}{" "}
+                  <button
+                    className="btn btn-xs btn-error text-white"
+                    onClick={() => removeEmail(index)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

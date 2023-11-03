@@ -3,11 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import { toWords } from "number-to-words";
 import logo from "../../../assets/invoiceLogo.jpg";
-const Invoice = () => {
+const BuyerInvoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [totalAmount, setTotalAmount] = useState();
-  const [remAmt, setRemAmt] = useState(false);
   const invoiceDetails = location?.state;
   console.log(invoiceDetails);
 
@@ -36,29 +35,18 @@ const Invoice = () => {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-
-  const handleAmt = () => {
-    if (remAmt) {
-      setRemAmt(false);
-    } else {
-      setRemAmt(true);
-    }
-  };
   return (
     <>
       <div className="grid-cols-2 w-full drop-shadow-sm card">
         <div className="flex gap-3 justify-end mt-4 mb-4  px-6 ">
           <button
-            onClick={() => navigate("/confirmed-orders")}
+            onClick={() => navigate("/buyer-orders")}
             className="btn btn-neutral text-white"
           >
             Go BACK
           </button>
           <button onClick={handlePrint} className="btn btn-info text-white">
             Print Invoice
-          </button>
-          <button onClick={handleAmt} className="btn btn-warning text-white">
-            {remAmt ? "Show Amount" : "Remove Amount"}
           </button>
         </div>
         <div ref={componentRef} className="md:p-4 min-h-screen  bg-white ">
@@ -142,10 +130,10 @@ const Invoice = () => {
                     <th className="py-2 border-b">Description</th>
 
                     <th className="py-2 border-b">Quantity</th>
-                    {remAmt ? "" : <th className="py-2 border-b">Unit</th>}
+                    <th className="py-2 border-b">Unit</th>
 
                     {/* <th className="py-2 border-b">Price</th> */}
-                    {remAmt ? "" : <th className="py-2 border-b">Total</th>}
+                    <th className="py-2 border-b">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -165,35 +153,24 @@ const Invoice = () => {
                         <td className="py-2 text-center  px-4 border-b">
                           {res?.quantity}
                         </td>
-
-                        {remAmt ? (
-                          ""
-                        ) : (
-                          <>
-                            {" "}
-                            <td className="py-2 text-center  px-4 border-b">
-                              ${res?.price.toLocaleString("en-US")}
-                            </td>
-                            <td className="py-2 text-center  px-4 border-b">
-                              {res?.total ? (
-                                <>
-                                  $
-                                  {res?.total
-                                    .toFixed(2)
-                                    ?.toLocaleString("en-US")}
-                                </>
-                              ) : (
-                                <>
-                                  $
-                                  {(
-                                    parseInt(res?.price) *
-                                    parseInt(res?.quantity)
-                                  ).toLocaleString("en-US")}
-                                </>
-                              )}
-                            </td>
-                          </>
-                        )}
+                        <td className="py-2 text-center  px-4 border-b">
+                          ${parseFloat(res?.price).toLocaleString("en-US")}
+                        </td>
+                        <td className="py-2 text-center  px-4 border-b">
+                          {res?.total ? (
+                            <>${res?.total?.toLocaleString("en-US")}</>
+                          ) : (
+                            <>
+                              $
+                              {(
+                                parseFloat(res?.price) *
+                                parseFloat(res?.quantity)
+                              )
+                                .toFixed(2)
+                                .toLocaleString("en-US")}
+                            </>
+                          )}
+                        </td>
                       </tr>
                     </>
                   ))}
@@ -202,30 +179,24 @@ const Invoice = () => {
             </section>
 
             {/* <!-- Section 4: Totals --> */}
-            {remAmt ? (
-              ""
-            ) : (
-              <>
-                <section className="flex justify-end">
-                  <div className="w-1/2">
-                    {/* <div className="flex justify-between border-b p-1">
-                <span className="text-[0.8rem] font-semibold">Discount:</span>
-                <span className="text-[0.8rem] font-semibold">$0.00</span>
-              </div> */}
-                    <div className=" bg-neutral text-white rounded-md flex justify-between border-b p-1">
-                      <span className="text-[0.8rem] font-bold">Total:</span>
-                      <span className="text-[0.8rem] font-bold ">
-                        ${totalAmount?.toFixed(2).toLocaleString("en-US")}
-                      </span>
-                    </div>
-                    {/* <div className="flex justify-between p-1">
-                <span className="text-[0.8rem] font-bold">Amount Due:</span>
-                <span className="text-[0.8rem] font-bold">$1000.00</span>
-              </div> */}
-                  </div>
-                </section>
-              </>
-            )}
+            <section className="flex justify-end">
+              <div className="w-1/2">
+                {/* <div className="flex justify-between border-b p-1">
+              <span className="text-[0.8rem] font-semibold">Discount:</span>
+              <span className="text-[0.8rem] font-semibold">$0.00</span>
+            </div> */}
+                <div className=" bg-neutral text-white rounded-md flex justify-between border-b p-1">
+                  <span className="text-[0.8rem] font-bold">Total:</span>
+                  <span className="text-[0.8rem] font-bold ">
+                    ${totalAmount?.toLocaleString("en-US")}
+                  </span>
+                </div>
+                {/* <div className="flex justify-between p-1">
+              <span className="text-[0.8rem] font-bold">Amount Due:</span>
+              <span className="text-[0.8rem] font-bold">$1000.00</span>
+            </div> */}
+              </div>
+            </section>
 
             {/* <div className="mt-4 border p-2">
               <div className="grid grid-cols-2">
@@ -240,7 +211,11 @@ const Invoice = () => {
                     </p>
                   </div>
                 </div>
-                
+                <div className="flex justify-end flex-col items-end pr-6 gap-10">
+                  <p>Signature</p>
+                  DIGITAL SIGNATURE
+                  <p>....................................</p>
+                </div>
               </div>
 
               <div className="mt-16">
@@ -260,4 +235,4 @@ const Invoice = () => {
   );
 };
 
-export default Invoice;
+export default BuyerInvoice;

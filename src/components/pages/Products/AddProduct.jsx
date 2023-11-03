@@ -16,6 +16,7 @@ const AddProduct = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [pNo, setPNo] = useState();
+  const [products, setProducts] = useState(null);
   const [visibleCheck, setVisibleCheck] = useState(false);
   const [description, setDescription] = useState("");
   const [selected, setSelected] = useState([]);
@@ -23,7 +24,9 @@ const AddProduct = () => {
   //IMAGE UPLOAD TO FIREBASE STATES
   const imagePicker = useRef();
   const [progress, setProgress] = useState(0);
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState(
+    "https://firebasestorage.googleapis.com/v0/b/school-inventory-management.appspot.com/o/Default%2Fdownload%20(1).png?alt=media&token=30cc7f78-7bb7-4508-964a-080efbb84e19&_gl=1*bxdxdz*_ga*ODM0NzE4MTczLjE2OTQyNzM5NjQ.*_ga_CW55HF8NVT*MTY5NzgwNjY0NS4xMzEuMS4xNjk3ODA2OTk4LjE4LjAuMA.."
+  );
   const [profileImageUploadStarted, setProfileImageUploadStarted] =
     useState(false);
 
@@ -52,9 +55,42 @@ const AddProduct = () => {
       return [];
     }
   };
+
+  const fetchProducts = async () => {
+    try {
+      // Get a reference to the "Admin" collection
+      const schoolsRef = collection(db, "Products");
+
+      // Get all documents in the "Admin" collection
+      const querySnapshot = await getDocs(schoolsRef);
+
+      // Extract the data from each document
+
+      const productsList = querySnapshot.docs.map((doc) => ({
+        did: doc.id,
+        ...doc.data(),
+      }));
+      productsList.sort((a, b) => b.time - a.time);
+
+      // Update the adminList array in reverse order so the newest data comes first
+      // setAdminList(adminList.reverse());
+
+      // Now "adminList" contains an array of all documents in the "Admin" collection
+      console.log(productsList);
+
+      setProducts(productsList);
+      return productsList;
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      return [];
+    }
+  };
   useEffect(() => {
     fetchSchools();
+    fetchProducts();
   }, []);
+
+  console.log(products);
   //IMAGE UPLOAD TO FIREBASE STATES
   const handleMultiSelectChange = (selectedOptions) => {
     console.log(selectedOptions);
@@ -141,8 +177,15 @@ const AddProduct = () => {
       };
 
       console.log(productDetails);
-      if (name == "" || price == " " || imageUrl == "") {
+      if (name == "" || price == " " || imageUrl == "" || !pNo) {
         toast.error("Please fill required details !");
+        return;
+      }
+      // Check if a product with the same pNo already exists
+      const productExists = products.some((product) => product.pNo === pNo);
+
+      if (productExists) {
+        toast.error("Product with the same product no already exists!");
         return;
       }
 

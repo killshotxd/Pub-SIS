@@ -6,12 +6,16 @@ import {
   onSnapshot,
   orderBy,
   query,
+  setDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { db } from "../../../../Firebase";
+import { auth, db } from "../../../../Firebase";
 import { BiEdit, BiTrash } from "react-icons/bi";
 import toast, { Toaster } from "react-hot-toast";
+import { deleteUser } from "firebase/auth";
+import { MdCancel } from "react-icons/md";
 
 const ListSchools = () => {
   const navigate = useNavigate();
@@ -20,6 +24,12 @@ const ListSchools = () => {
   const [pages, setPages] = useState(null);
   const itemsPerPage = 7;
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deactivateModal, setDeactivateModal] = useState(false);
+  const [reactivateModal, setReactivateModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [sortedField, setSortedField] = useState(""); // Initially not sorting
+  const [sortDirection, setSortDirection] = useState("asc");
   //   FETCH SCHOOLS FROM DB
 
   const fetchSchools = async () => {
@@ -63,35 +73,145 @@ const ListSchools = () => {
     setCurrentPage(pageNumber);
   };
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const itemsToDisplay = schools?.slice(startIndex, endIndex);
-  useEffect(() => {
-    fetchSchools();
-  }, [currentPage]);
-
-  const handleDelete = async (did) => {
+  const handleDeactivate = async (did) => {
+    console.log(productToDelete);
     try {
+      // await deleteUser(auth, productToDelete.uid);
+      // toast.success("User Deleted Successfully!");
       const docRef = doc(db, "Schools", did);
-      await deleteDoc(docRef);
-      toast.success("School Deleted Successfully !");
+      await setDoc(docRef, { deactivated: true }, { merge: true });
+
+      toast.success("School Deactivated Successfully. !");
       fetchSchools();
     } catch (error) {
       console.log(error);
     }
   };
 
-  const filteredItems = itemsToDisplay?.filter((item) => {
-    const { name, city, contact, email } = item;
-    const query = searchQuery.toLowerCase();
+  const handleReactivate = async (did) => {
+    console.log(productToDelete);
+    try {
+      // await deleteUser(auth, productToDelete.uid);
+      // toast.success("User Deleted Successfully!");
+      const docRef = doc(db, "Schools", did);
+      await setDoc(docRef, { deactivated: false }, { merge: true });
 
-    return (
-      name.toLowerCase().includes(query) ||
-      city.toLowerCase().includes(query) ||
-      contact.includes(query) ||
-      email.toLowerCase().includes(query)
-    );
-  });
+      toast.success("School Reactivated Successfully. !");
+      fetchSchools();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = async (did) => {
+    console.log(productToDelete);
+    try {
+      // await deleteUser(auth, productToDelete.uid);
+      // toast.success("User Deleted Successfully!");
+      const docRef = doc(db, "Schools", did);
+      await deleteDoc(docRef);
+
+      toast.success("School Deleted Successfully. !");
+      fetchSchools();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const toggleSortDirection = (field) => {
+    if (sortedField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortedField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortedItems = () => {
+    if (!schools) {
+      return [];
+    }
+    const sortedItems = [...schools];
+
+    if (sortedField) {
+      sortedItems.sort((a, b) => {
+        const aValue = a[sortedField].toLowerCase();
+        const bValue = b[sortedField].toLowerCase();
+        const compareResult =
+          sortDirection === "asc"
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+
+        return compareResult;
+      });
+    }
+
+    return sortedItems;
+  };
+
+  const applySearchFilter = (items, query) => {
+    return items?.filter((item) => {
+      const { name, city, contact, email } = item;
+      const query = searchQuery.toLowerCase();
+
+      return (
+        name.toLowerCase().includes(query) ||
+        city.toLowerCase().includes(query) ||
+        contact.includes(query) ||
+        email.toLowerCase().includes(query)
+      );
+    });
+  };
+  const allItems = getSortedItems();
+  const filteredItems = applySearchFilter(allItems, searchQuery);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const itemsToDisplay = filteredItems.slice(startIndex, endIndex);
+  useEffect(() => {
+    fetchSchools();
+  }, [currentPage, searchQuery]); // Include searchQuery in the dependency array
+
+  const handleDeleteModal = (product) => {
+    // Find the product to delete based on productId
+
+    // Set the product to delete and open the modal
+    setProductToDelete(product);
+    setDeleteModalOpen(true);
+  };
+
+  const handleReactivateModal = (product) => {
+    setProductToDelete(product);
+    setReactivateModal(true);
+  };
+  const confirmDeActivate = () => {
+    // Call your delete function here with productToDelete
+    // ...
+    handleDeactivate(productToDelete.did);
+    // Close the modal
+    setDeleteModalOpen(false);
+    setProductToDelete(null);
+  };
+  const confirmReActivate = () => {
+    // Call your delete function here with productToDelete
+    // ...
+    handleReactivate(productToDelete.did);
+    // Close the modal
+    setReactivateModal(false);
+    setProductToDelete(null);
+  };
+  const confirmDelete = () => {
+    // Call your delete function here with productToDelete
+    // ...
+    handleDelete(productToDelete.did);
+    // Close the modal
+    setDeleteModalOpen(false);
+    setProductToDelete(null);
+  };
+  const cancelDelete = () => {
+    // Close the modal without deleting
+    setDeleteModalOpen(false);
+    setProductToDelete(null);
+  };
   return (
     <>
       <Toaster />
@@ -100,7 +220,10 @@ const ListSchools = () => {
           type="text"
           placeholder="Search by name, city, phone number, or email"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
           className="px-4 py-2 md:mb-4 border rounded-md"
         />
         <button
@@ -111,22 +234,47 @@ const ListSchools = () => {
         </button>
       </div>
 
+      <div className="mt-3  flex justify-end items-center gap-2">
+        <button
+          onClick={() => toggleSortDirection("name")}
+          className="btn btn-info text-white"
+        >
+          Sort by name
+        </button>
+
+        <button
+          onClick={() => setSortedField("")}
+          className="btn btn-warning text-white"
+        >
+          Clear
+        </button>
+      </div>
+
       <div className="mt-12 shadow-sm border rounded-lg overflow-x-auto">
         <table className="w-full table-auto text-sm text-left">
           <thead className="bg-gray-50 text-gray-600 font-medium border-b">
             <tr>
               <th className="py-3 px-6">Sr No</th>
-              <th className="py-3 px-6">Name</th>
+              <th
+                className="py-3 px-6"
+                onClick={() => toggleSortDirection("name")}
+              >
+                Name {sortedField === "name" && `(${sortDirection})`}
+              </th>
               <th className="py-3 px-6">Phone number</th>
 
               <th className="py-3 px-6">City</th>
               <th className="py-3 px-6">Zip</th>
+              <th className="py-3 px-6">Status</th>
               <th className="py-3 px-6">Action</th>
             </tr>
           </thead>
           <tbody className="text-gray-600 divide-y">
-            {filteredItems?.map((item, idx) => (
-              <tr key={item.did}>
+            {itemsToDisplay?.map((item, idx) => (
+              <tr
+                className={item.deactivated ? "bg-gray-300" : ""}
+                key={item.did}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">{idx + 1}</td>
                 <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
                   <img src={item.avatar} className="w-10 h-10 rounded-full" />
@@ -143,12 +291,45 @@ const ListSchools = () => {
                 <td className="px-6 py-4 whitespace-nowrap">{item.city}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.zip_code}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
+                  {item.deactivated == true ? "Deactivated" : "Active"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
+                    {item.deactivated == true ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            handleReactivateModal(item);
+                            setReactivateModal(true);
+                          }}
+                          className="btn btn-xs hover:bg-red-400 hover:text-white"
+                        >
+                          <MdCancel /> Reactivate
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {" "}
+                        <button
+                          onClick={() => {
+                            handleDeleteModal(item);
+                            setDeactivateModal(true);
+                          }}
+                          className="btn btn-xs hover:bg-red-400 hover:text-white"
+                        >
+                          <MdCancel /> Deactivate
+                        </button>
+                      </>
+                    )}
+
                     <button
-                      onClick={() => handleDelete(item.did)}
+                      onClick={() => {
+                        handleDeleteModal(item);
+                        setDeactivateModal(false);
+                      }}
                       className="btn btn-xs hover:bg-red-400 hover:text-white"
                     >
-                      <BiTrash />
+                      <BiTrash /> delete
                     </button>
 
                     <button
@@ -157,7 +338,7 @@ const ListSchools = () => {
                       }
                       className="btn btn-xs  hover:bg-info hover:text-white"
                     >
-                      <BiEdit />
+                      <BiEdit /> edit
                     </button>
                   </div>
                 </td>
@@ -212,6 +393,122 @@ const ListSchools = () => {
           </a>
         </div>
       </div>
+
+      {isDeleteModalOpen && productToDelete && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {deactivateModal ? "deactivate" : "delete"} School
+                </h3>
+                <p>
+                  Are you sure you want to{" "}
+                  {deactivateModal ? "deactivate" : "delete"} the school:{" "}
+                  {productToDelete.name} - {productToDelete.email}?
+                </p>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                {deactivateModal ? (
+                  <>
+                    <button
+                      onClick={confirmDeActivate}
+                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      Yes, Deactivate
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={confirmDelete}
+                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      Yes, Delete
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={cancelDelete}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  No, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reactivateModal && productToDelete && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {reactivateModal ? "Reactivate" : "delete"} School
+                </h3>
+                <p>
+                  Are you sure you want to{" "}
+                  {reactivateModal ? "reactivate" : "delete"} the school:{" "}
+                  {productToDelete.name} - {productToDelete.email}?
+                </p>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                {reactivateModal ? (
+                  <>
+                    <button
+                      onClick={confirmReActivate}
+                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      Yes, Reactivate
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={confirmDelete}
+                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      Yes, Delete
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={cancelDelete}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  No, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
