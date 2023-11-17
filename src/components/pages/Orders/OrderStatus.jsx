@@ -172,10 +172,10 @@ const OrderStatus = () => {
                       {item.quantity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      ${item.price}
+                      ${parseFloat(item.price).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      ${item.total}
+                      ${parseFloat(item.total).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {state?.status}

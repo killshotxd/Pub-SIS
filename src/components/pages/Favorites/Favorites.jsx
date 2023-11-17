@@ -163,7 +163,7 @@ const Favorites = () => {
                       <h1 className="inline-flex items-center gap-3 text-lg font-semibold">
                         {res?.name}{" "}
                         <span className="badge badge-info text-white">
-                          ${res?.price}
+                          ${parseFloat(res?.price).toFixed(2)}
                         </span>
                       </h1>
                       <p className="mt-3 text-sm text-gray-600">

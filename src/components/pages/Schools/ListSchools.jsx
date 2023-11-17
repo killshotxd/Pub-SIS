@@ -249,104 +249,111 @@ const ListSchools = () => {
           Clear
         </button>
       </div>
+      {itemsToDisplay.length > 0 ? (
+        <div className="mt-12 shadow-sm border rounded-lg overflow-x-auto">
+          <table className="w-full table-auto text-sm text-left">
+            <thead className="bg-gray-50 text-gray-600 font-medium border-b">
+              <tr>
+                <th className="py-3 px-6">Sr No</th>
+                <th
+                  className="py-3 px-6"
+                  onClick={() => toggleSortDirection("name")}
+                >
+                  Name {sortedField === "name" && `(${sortDirection})`}
+                </th>
+                <th className="py-3 px-6">Phone number</th>
 
-      <div className="mt-12 shadow-sm border rounded-lg overflow-x-auto">
-        <table className="w-full table-auto text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600 font-medium border-b">
-            <tr>
-              <th className="py-3 px-6">Sr No</th>
-              <th
-                className="py-3 px-6"
-                onClick={() => toggleSortDirection("name")}
-              >
-                Name {sortedField === "name" && `(${sortDirection})`}
-              </th>
-              <th className="py-3 px-6">Phone number</th>
-
-              <th className="py-3 px-6">City</th>
-              <th className="py-3 px-6">Zip</th>
-              <th className="py-3 px-6">Status</th>
-              <th className="py-3 px-6">Action</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-600 divide-y">
-            {itemsToDisplay?.map((item, idx) => (
-              <tr
-                className={item.deactivated ? "bg-gray-300" : ""}
-                key={item.did}
-              >
-                <td className="px-6 py-4 whitespace-nowrap">{idx + 1}</td>
-                <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
-                  <img src={item.avatar} className="w-10 h-10 rounded-full" />
-                  <div>
-                    <span className="block text-gray-700 text-sm font-medium">
-                      {item.name}
-                    </span>
-                    <span className="block text-gray-700 text-xs">
-                      {item.email}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.contact}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.city}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.zip_code}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {item.deactivated == true ? "Deactivated" : "Active"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-3">
-                    {item.deactivated == true ? (
-                      <>
-                        <button
-                          onClick={() => {
-                            handleReactivateModal(item);
-                            setReactivateModal(true);
-                          }}
-                          className="btn btn-xs hover:bg-red-400 hover:text-white"
-                        >
-                          <MdCancel /> Reactivate
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        {" "}
-                        <button
-                          onClick={() => {
-                            handleDeleteModal(item);
-                            setDeactivateModal(true);
-                          }}
-                          className="btn btn-xs hover:bg-red-400 hover:text-white"
-                        >
-                          <MdCancel /> Deactivate
-                        </button>
-                      </>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        handleDeleteModal(item);
-                        setDeactivateModal(false);
-                      }}
-                      className="btn btn-xs hover:bg-red-400 hover:text-white"
-                    >
-                      <BiTrash /> delete
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        navigate(`/edit-school/${item.did}`, { state: item })
-                      }
-                      className="btn btn-xs  hover:bg-info hover:text-white"
-                    >
-                      <BiEdit /> edit
-                    </button>
-                  </div>
-                </td>
+                <th className="py-3 px-6">City</th>
+                <th className="py-3 px-6">Zip</th>
+                <th className="py-3 px-6">Status</th>
+                <th className="py-3 px-6">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="text-gray-600 divide-y">
+              {itemsToDisplay?.map((item, idx) => (
+                <tr
+                  className={item.deactivated ? "bg-gray-300" : ""}
+                  key={item.did}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">{idx + 1}</td>
+                  <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
+                    <img src={item.avatar} className="w-10 h-10 rounded-full" />
+                    <div>
+                      <span className="block text-gray-700 text-sm font-medium">
+                        {item.name}
+                      </span>
+                      <span className="block text-gray-700 text-xs">
+                        {item.email}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.contact}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.city}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.zip_code}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.deactivated == true ? "Deactivated" : "Active"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      {item.deactivated == true ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              handleReactivateModal(item);
+                              setReactivateModal(true);
+                            }}
+                            className="btn btn-xs hover:bg-red-400 hover:text-white"
+                          >
+                            <MdCancel /> Reactivate
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {" "}
+                          <button
+                            onClick={() => {
+                              handleDeleteModal(item);
+                              setDeactivateModal(true);
+                            }}
+                            className="btn btn-xs hover:bg-red-400 hover:text-white"
+                          >
+                            <MdCancel /> Deactivate
+                          </button>
+                        </>
+                      )}
+
+                      {/* <button
+                        onClick={() => {
+                          handleDeleteModal(item);
+                          setDeactivateModal(false);
+                        }}
+                        className="btn btn-xs hover:bg-red-400 hover:text-white"
+                      >
+                        <BiTrash /> delete
+                      </button> */}
+
+                      <button
+                        onClick={() =>
+                          navigate(`/edit-school/${item.did}`, { state: item })
+                        }
+                        className="btn btn-xs  hover:bg-info hover:text-white"
+                      >
+                        <BiEdit /> edit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <h3 className="text-center text-2xl">No School Found!</h3>
+      )}
 
       {/* Pagination */}
       <div className="mt-8">
@@ -412,11 +419,11 @@ const ListSchools = () => {
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 className="text-lg font-medium text-gray-900">
-                  {deactivateModal ? "deactivate" : "delete"} School
+                  {deactivateModal ? "Deactivate" : "Delete"} School
                 </h3>
                 <p>
                   Are you sure you want to{" "}
-                  {deactivateModal ? "deactivate" : "delete"} the school:{" "}
+                  {deactivateModal ? "Deactivate" : "Delete"} the school:{" "}
                   {productToDelete.name} - {productToDelete.email}?
                 </p>
               </div>
@@ -470,11 +477,11 @@ const ListSchools = () => {
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 className="text-lg font-medium text-gray-900">
-                  {reactivateModal ? "Reactivate" : "delete"} School
+                  {reactivateModal ? "Reactivate" : "Delete"} School
                 </h3>
                 <p>
                   Are you sure you want to{" "}
-                  {reactivateModal ? "reactivate" : "delete"} the school:{" "}
+                  {reactivateModal ? "Reactivate" : "Delete"} the school:{" "}
                   {productToDelete.name} - {productToDelete.email}?
                 </p>
               </div>

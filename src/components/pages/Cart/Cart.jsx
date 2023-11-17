@@ -197,6 +197,7 @@ const Cart = () => {
   }, 0);
 
   const handleOrder = async () => {
+    const schoolMails = localStorage.getItem("schoolMails");
     setSendOrder(true);
     let emailSent = false;
     try {
@@ -306,6 +307,7 @@ const Cart = () => {
             method: "POST",
             body: JSON.stringify({
               products,
+              schoolMails: schoolMails,
             }),
             headers: {
               "Content-Type": "application/json",
@@ -510,7 +512,7 @@ const Cart = () => {
                           </div>
 
                           <div className="flex gap-2 items-center">
-                            <p>Pick a delivery date :</p>{" "}
+                            <p>Requested Delivery Date :</p>{" "}
                             <DatePicker
                               selected={selectedDate}
                               value={

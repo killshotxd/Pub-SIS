@@ -216,89 +216,93 @@ const ListProducts = () => {
           Clear
         </button>
       </div>
+      {itemsToDisplay.length > 0 ? (
+        <div className="mt-12 shadow-sm border rounded-lg overflow-x-auto">
+          <table className="w-full table-auto text-sm text-left">
+            <thead className="bg-gray-50 text-gray-600 font-medium border-b">
+              <tr>
+                <th className="py-3 px-6">Product No</th>
+                <th
+                  className="py-3 px-6"
+                  onClick={() => toggleSortDirection("name")}
+                >
+                  Name {sortedField === "name" && `(${sortDirection})`}
+                </th>
 
-      <div className="mt-12 shadow-sm border rounded-lg overflow-x-auto">
-        <table className="w-full table-auto text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600 font-medium border-b">
-            <tr>
-              <th className="py-3 px-6">Product No</th>
-              <th
-                className="py-3 px-6"
-                onClick={() => toggleSortDirection("name")}
-              >
-                Name {sortedField === "name" && `(${sortDirection})`}
-              </th>
-
-              <th className="py-3 px-6">Price</th>
-              <th
-                className="py-3 px-6"
-                onClick={() => toggleSortDirection("status")}
-              >
-                Status {sortedField === "status" && `(${sortDirection})`}
-              </th>
-              <th className="py-3 px-6">Action</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-600 divide-y">
-            {itemsToDisplay?.map((item, idx) => (
-              <tr key={item.did}>
-                <td className="px-6 py-4 whitespace-nowrap">{item.pNo}</td>
-                <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
-                  <img src={item.image} className="w-10 h-10 rounded-full" />
-                  <div>
-                    <span className="block text-gray-700 text-sm font-medium">
-                      {item.name}
-                    </span>
-                    {/* <span className="block text-gray-700 text-xs">
+                <th className="py-3 px-6">Price</th>
+                <th
+                  className="py-3 px-6"
+                  onClick={() => toggleSortDirection("status")}
+                >
+                  Status {sortedField === "status" && `(${sortDirection})`}
+                </th>
+                <th className="py-3 px-6">Action</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-600 divide-y">
+              {itemsToDisplay?.map((item, idx) => (
+                <tr key={item.did}>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.pNo}</td>
+                  <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
+                    <img src={item.image} className="w-10 h-10 rounded-full" />
+                    <div>
+                      <span className="block text-gray-700 text-sm font-medium">
+                        {item.name}
+                      </span>
+                      {/* <span className="block text-gray-700 text-xs">
                       {item.email}
                     </span> */}
-                  </div>
-                </td>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    ${parseFloat(item.price).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.visibleCheck ? (
+                      <>
+                        <span className="badge  text-white badge-warning">
+                          In-Active
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="badge  text-white badge-success">
+                          Active
+                        </span>
+                      </>
+                    )}
+                  </td>
 
-                <td className="px-6 py-4 whitespace-nowrap">${item.price}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {item.visibleCheck ? (
-                    <>
-                      <span className="badge  text-white badge-warning">
-                        In-Active
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="badge  text-white badge-success">
-                        Active
-                      </span>
-                    </>
-                  )}
-                </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleDeleteModal(item)}
+                        className="btn btn-xs hover:bg-red-400 hover:text-white"
+                      >
+                        <BiTrash /> delete
+                      </button>
 
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => handleDeleteModal(item)}
-                      className="btn btn-xs hover:bg-red-400 hover:text-white"
-                    >
-                      <BiTrash /> delete
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        navigate(`/edit-product/${item.did}`, {
-                          state: item,
-                          replace: true,
-                        })
-                      }
-                      className="btn btn-xs  hover:bg-info hover:text-white"
-                    >
-                      <BiEdit /> edit
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      <button
+                        onClick={() =>
+                          navigate(`/edit-product/${item.did}`, {
+                            state: item,
+                            replace: true,
+                          })
+                        }
+                        className="btn btn-xs  hover:bg-info hover:text-white"
+                      >
+                        <BiEdit /> edit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <h3 className="text-center text-2xl">No Product Found!</h3>
+      )}
 
       {/* Pagination */}
       <div className="mt-8">

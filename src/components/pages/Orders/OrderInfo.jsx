@@ -23,6 +23,7 @@ import { db } from "../../../../Firebase";
 import toast, { Toaster } from "react-hot-toast";
 const OrderInfo = () => {
   const location = useLocation();
+  const schoolMails = localStorage.getItem("schoolMails");
   const state = location.state;
   const [isConfirmationInProgress, setIsConfirmationInProgress] =
     useState(false);
@@ -34,9 +35,10 @@ const OrderInfo = () => {
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [stateOrder, setStateOrder] = useState({
     status: "Confirmed", // Orders data for the specific school
-    selectedOrders: [], // Store selected orders for confirmation
+    selectedOrders: [],
+    schoolMails: state.schoolData.schoolMails, // Store selected orders for confirmation
   });
-
+  console.log(schoolMails);
   // FETCH ALL ORDERS APPROVALS
 
   const getOrder = (state) => {
@@ -290,7 +292,7 @@ const OrderInfo = () => {
 
   const handleUpdateDeliveryDate = async () => {
     if (updateDate == "") {
-      toast.error("Please pick a date to update !", { id: "EroorDate" });
+      toast.error("Pick a date to update !", { id: "UEU" });
       return;
     }
     const orderRef = doc(db, "approve", state.did);
@@ -327,12 +329,15 @@ const OrderInfo = () => {
     // const cartItemRef = doc(db, "cart", uid, "items", did);
 
     try {
-      // First, delete the product from the cart
-      // await deleteDoc(cartItemRef);
-      // toast.success("Item successfully removed from cart");
+      // FIRST SEND TO REJECT ORDER COLLECTION THEN PERFORM DELETE FROM APPROVAL
+      const rejectCollection = collection(db, "rejected/orders", state.did);
+      let data = {
+        ...orderToDelete,
+        rejectedAt: new Date().toLocaleDateString(),
+      };
+      await addDoc(rejectCollection, data);
 
-      // Then, remove the corresponding order
-      // Replace with your logic to get the school's email
+      console.log("Success");
 
       // Create a reference to the batch in the "approve" collection
       const batchRef = doc(db, "approve", state.did);
@@ -486,9 +491,12 @@ const OrderInfo = () => {
                       </button>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">${item.price}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    ${item.total.toFixed(2)}
+                    {" "}
+                    ${parseFloat(item.price).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    ${parseFloat(item.total).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">

@@ -108,6 +108,7 @@ const Dashboard = () => {
         const userDocSnapshot = await getDoc(SchoolRef);
         const schoolData = userDocSnapshot.data();
         console.log(schoolData);
+        localStorage.setItem("schoolMails", schoolData.schoolMails);
         setUserData(schoolData);
       }
     } catch (error) {
@@ -144,20 +145,20 @@ const Dashboard = () => {
       setLink(selectedSchool.link);
       setLink2(selectedSchool.link2);
       setLink3(selectedSchool.link3);
-      setImageUrl(selectedSchool.watermark);
+      // setImageUrl(selectedSchool.watermark);
     } else {
       // Handle the case when no school is selected or not found
-      setMessage(null);
-      setNotice(null);
+      setNewMes("");
+      setNewNotice("");
       setLink("");
       setLink2("");
       setLink3("");
-      setImageUrl("");
+      // setImageUrl("");
     }
   };
 
   const handleUpdate = async () => {
-    if (!link.startsWith("http")) {
+    if ((link || link2 || link3) && !link.startsWith("http")) {
       toast.error("Link should start with http !");
       return;
     }
@@ -166,10 +167,10 @@ const Dashboard = () => {
       let data = {
         message: newMes,
         notice: newNotice,
-        watermark: imageUrl ? imageUrl : "N/A",
-        link: link ? link : "N/A",
-        link2: link2 ? link2 : "N/A",
-        link3: link3 ? link3 : "N/A",
+        // watermark: imageUrl ? imageUrl : "N/A",
+        link: link ? link : "",
+        link2: link2 ? link2 : "",
+        link3: link3 ? link3 : "",
       };
       try {
         schools.forEach((element) => {
@@ -182,26 +183,23 @@ const Dashboard = () => {
         getMessage();
         getSchools();
         setNewMes("");
-        setImageUrl("");
+        // setImageUrl("");
         setLink("");
         setLink2("");
         setLink3("");
         setNewNotice("");
+        setSchoolEmail("");
       } catch (error) {
         console.log(error);
       }
     } else {
-      if (newMes == "" || newNotice == "") {
-        toast.error("Please enter a message !");
-        return;
-      }
       let data = {
         message: newMes,
         notice: newNotice,
-        watermark: imageUrl ? imageUrl : "N/A",
-        link: link ? link : "N/A",
-        link2: link2 ? link2 : "N/A",
-        link3: link3 ? link3 : "N/A",
+        // watermark: imageUrl ? imageUrl : "N/A",
+        link: link ? link : "",
+        link2: link2 ? link2 : "",
+        link3: link3 ? link3 : "",
       };
       console.log(schoolEmail);
       try {
@@ -210,12 +208,13 @@ const Dashboard = () => {
         toast.success("Welcome Message/Notice has been updated successfully !");
         setNewMes("");
         setNewNotice("");
-        setImageUrl("");
+        // setImageUrl("");
         setLink("");
         setLink2("");
         setLink3("");
         getMessage();
         getSchools();
+        setSchoolEmail("");
       } catch (error) {
         console.log(error);
       }
@@ -251,7 +250,7 @@ const Dashboard = () => {
     setNewMes(res.message);
     setNewNotice(res.notice);
     setSchoolEmail(res.email);
-    setImageUrl(res.watermark);
+    // setImageUrl(res.watermark);
     setLink(res.link);
     setLink2(res.link2);
     setLink3(res.link3);
@@ -295,11 +294,11 @@ const Dashboard = () => {
               Hello, Welcome to Inventory Management!
             </h3>
 
-            <div className="mt-4">
+            {/* <div className="mt-4">
               <h4 className="text-3xl font-semibold flex items-center gap-1">
                 School Dashboard Manager
               </h4>
-            </div>
+            </div> */}
 
             <div className="mt-4 flex items-center gap-5">
               <select
@@ -310,7 +309,7 @@ const Dashboard = () => {
                 name="schools"
                 id="schools"
               >
-                <option selected value="" disabled>
+                <option selected value="">
                   Select a school
                 </option>
                 {schools?.map((res) => (
@@ -334,7 +333,8 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="message">Message </label>
                 <input
                   type="text"
                   placeholder="Enter Message here...."
@@ -347,7 +347,8 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="notice">Notice </label>
                 <input
                   type="text"
                   placeholder="Enter Notice/Announcement here...."
@@ -360,7 +361,8 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="link">Food Production Records Link </label>
                 <input
                   type="text"
                   placeholder="Food Production Records Link"
@@ -373,7 +375,8 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="link2">School Menu Link </label>
                 <input
                   type="text"
                   placeholder="School Menu Link"
@@ -386,7 +389,8 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="link3">School Order Form Link </label>
                 <input
                   type="text"
                   placeholder="School Order Form"
@@ -397,7 +401,7 @@ const Dashboard = () => {
                 />
               </div>
             </div>
-            <div className="w-full flex gap-2 items-center">
+            {/* <div className="w-full flex gap-2 items-center">
               <div
                 onClick={handleImageClick}
                 className=" cursor-pointer mt-4 btn-ghost shadow-lg w-1/3 p-6 rounded flex justify-center items-center text-xs gap-1"
@@ -408,7 +412,7 @@ const Dashboard = () => {
               <figure>
                 <input className="w-1/2 " type="image" src={imageUrl} alt="" />
               </figure>
-            </div>
+            </div> */}
 
             <div className="mt-4 flex items-center justify-between w-full mx-auto">
               <button
@@ -417,6 +421,143 @@ const Dashboard = () => {
               >
                 Update Message
               </button>
+            </div>
+
+            <div className="mt-12 shadow-sm border rounded-lg overflow-x-auto">
+              <table className="w-full table-auto text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 font-medium border-b">
+                  <tr>
+                    <th className="py-3 px-6">Name</th>
+
+                    <th className="py-3 px-6">Message</th>
+                    <th className="py-3 px-6">Notice/Announcement</th>
+                    {/* <th className="py-3 px-6">Watermark</th> */}
+                    <th className="py-3 px-6">Food Production Record Link</th>
+                    <th className="py-3 px-6">School Menu Link</th>
+                    <th className="py-3 px-6">School Order Form Link</th>
+                    <th className="py-3 px-6">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600 divide-y">
+                  {currentItems?.map((item, idx) => (
+                    <tr key={idx + 1}>
+                      <td className="flex items-center gap-x-3 py-3 px-6 whitespace-nowrap">
+                        <img
+                          src={item.avatar}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <span className="block text-gray-700 text-sm font-medium">
+                            {item.name}
+                          </span>
+                          <span className="block text-gray-700 text-xs">
+                            {item.email}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {item.message}
+                      </td>
+                      <td className="px-6 py-4 whitespace-prewrap max-w-md">
+                        {item.notice}
+                      </td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="avatar">
+                          <div className="w-24 rounded">
+                            <img src={item.watermark} />
+                          </div>
+                        </div>
+                      </td> */}
+                      <td className="px-6 py-4 whitespace-pre-wrap max-w-md overflow-x-auto	">
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.link}
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 whitespace-pre-wrap max-w-xs overflow-x-auto	">
+                        <a
+                          href={item.link2}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.link2}
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 whitespace-pre-wrap max-w-xs overflow-x-auto	">
+                        <a
+                          href={item.link3}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.link3}
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => {
+                              handleEdit(item);
+                            }}
+                            className="btn btn-xs hover:bg-red-400 hover:text-white"
+                          >
+                            <BiEdit /> edit
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-8 pb-8">
+              <div className="flex items-center justify-between">
+                {/* Previous Page */}
+                <a
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className={`hover:text-indigo-600 flex items-center gap-x-2 ${
+                    currentPage === 1 ? "pointer-events-none text-gray-400" : ""
+                  }`}
+                >
+                  {/* ... */}
+                </a>
+
+                {/* Page Numbers */}
+                <ul className="flex items-center gap-1">
+                  {pageNumbers?.map((page) => (
+                    <li key={page.id} className="text-sm">
+                      <a
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 rounded-lg duration-150 hover:text-indigo-600 hover:bg-indigo-50 ${
+                          currentPage === page
+                            ? "bg-indigo-50 text-indigo-600 font-medium"
+                            : ""
+                        }`}
+                      >
+                        {page}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Next Page */}
+                <a
+                  href="javascript:void(0)"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className={`hover:text-indigo-600 flex items-center gap-x-2 ${
+                    currentPage === pageNumbers?.length
+                      ? "pointer-events-none text-gray-400"
+                      : ""
+                  }`}
+                >
+                  {/* ... */}
+                </a>
+              </div>
             </div>
           </>
         ) : (
@@ -459,13 +600,13 @@ const Dashboard = () => {
                   </a>
                 </div>
               </div>
-              <div className="mt-4">
+              {/* <div className="mt-4">
                 <img
                   style={{ width: "100vw", height: "50vh" }}
                   src={userData?.watermark}
                   alt="watermark"
                 />
-              </div>
+              </div> */}
             </div>
           </>
         )}

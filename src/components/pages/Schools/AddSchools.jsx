@@ -124,6 +124,7 @@ const AddSchools = () => {
         city: city,
         zip_code: zip,
         isAdmin: false,
+        schoolMails: [...schoolMails, email],
         message: `Welcome, ${name}`,
         time: serverTimestamp(),
       };
@@ -138,30 +139,6 @@ const AddSchools = () => {
 
       await setDoc(schoolRef, schoolDetails, { merge: true });
 
-      try {
-        const res = await fetch(
-          "https://mail-api-l2xn.onrender.com/send-credentials",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              school: {
-                name: name,
-                email: email,
-                password: password,
-                schoolMails: schoolMails,
-              }, // Send only the single product
-            }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const data = await res.json();
-        console.log(data);
-      } catch (error) {
-        console.log(error);
-      }
       toast.success("School Added successfully!");
 
       setName("");
@@ -351,9 +328,7 @@ const AddSchools = () => {
         </div>
 
         <div>
-          <label htmlFor="batchEmail">
-            Add school emails for sending credentials
-          </label>
+          <label htmlFor="batchEmail">Add other school emails</label>
           <div className="flex items-center gap-2">
             <input
               type="email"

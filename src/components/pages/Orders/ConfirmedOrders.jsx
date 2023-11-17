@@ -8,6 +8,7 @@ import { MultiSelect } from "react-multi-select-component";
 
 const ConfirmedOrders = () => {
   const [schools, setSchools] = useState(null);
+  const [schoolsOption, setSchoolsOption] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [orderPresent, setOrderPresent] = useState([]);
@@ -66,8 +67,10 @@ const ConfirmedOrders = () => {
       const schoolsRef = collection(db, "Schools");
       const querySnapshot = await getDocs(schoolsRef);
       const schoolList = querySnapshot.docs.map((doc) => doc.data().email);
-      console.log(schoolList);
+      const schoolListOption = querySnapshot.docs.map((doc) => doc.data());
+      console.log(schoolListOption);
       setSchools(schoolList);
+      setSchoolsOption(schoolListOption);
 
       // Call handleOrderConfirmation here after setting schools
       handleOrderConfirmation(schoolList); // Pass schoolList as an argument
@@ -294,20 +297,23 @@ const ConfirmedOrders = () => {
               </select>
             </div>
             {console.log(selected)}
-            {schools && selected !== undefined && (
-              <div className="max-w-[90vw]">
-                <label className="font-semibold">Filter By School: </label>
-                <MultiSelect
-                  options={schools?.map((school) => ({
-                    label: school,
-                    value: school,
-                  }))}
-                  value={selected}
-                  onChange={handleMultiSelectChange}
-                  labelledBy="Select"
-                  hasSelectAll={true}
-                />
-              </div>
+            {schoolsOption && selected !== undefined && (
+              <>
+                {console.log(schools)}
+                <div className="max-w-[90vw]">
+                  <label className="font-semibold">Filter By School: </label>
+                  <MultiSelect
+                    options={schoolsOption?.map((school) => ({
+                      label: `${school.name}  (${school.email})`,
+                      value: school.email,
+                    }))}
+                    value={selected}
+                    onChange={handleMultiSelectChange}
+                    labelledBy="Select"
+                    hasSelectAll={true}
+                  />
+                </div>
+              </>
             )}
             {filteredOrders?.length === 0 ? (
               <>

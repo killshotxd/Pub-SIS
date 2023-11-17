@@ -115,7 +115,9 @@ const ProductInfo = () => {
                   <h2 className="text-lg font-semibold md:text-xl xl:text-2xl">
                     {state?.name}
                   </h2>
-                  <p className="mt-4 font-semibold">${state?.price}</p>
+                  <p className="mt-4 font-semibold">
+                    ${parseFloat(state?.price).toFixed(2)}
+                  </p>
                 </div>
                 {/* <div className="mb-2 pt-0.5">
                 <h4 className="text-15px mb-3 font-normal capitalize text-opacity-70">

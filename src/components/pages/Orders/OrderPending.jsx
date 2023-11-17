@@ -198,7 +198,7 @@ const OrderPending = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {item.deliveryDate == "" ? (
+                          {item?.deliveryDate == "" || !item.deliveryDate ? (
                             "3 Business Days"
                           ) : (
                             <>

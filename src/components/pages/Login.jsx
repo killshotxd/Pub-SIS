@@ -79,7 +79,7 @@ const Login = () => {
         <div className="hero-content text-center text-neutral-content">
           <div className=" min-w-[20rem] max-w-lg">
             <h1 className="mb-5  text-4xl font-bold text-white">
-              Login to School Inventory Management
+              Login to School Portal
             </h1>
             <p className="mb-5 text-white">Unlock the Doors to Success</p>
             <div className="card glass bg-transparent bg-opacity-10 justify-center m-auto flex-shrink-0 w-full max-w-md shadow-2xl bg-base-100">

@@ -39,6 +39,7 @@ import BuyerInvoice from "./components/pages/Invoice/BuyerInvoice";
 import BatchInvoice from "./components/pages/Invoice/BatchInvoice";
 import OrderPending from "./components/pages/Orders/OrderPending";
 import logo from "./assets/7.jpg";
+import RejectedOrder from "./components/pages/Schools/RejectedOrder";
 const App = () => {
   const { currentUser, logout } = UserAuth();
   const [userData, setUserData] = useState(null);
@@ -55,9 +56,6 @@ const App = () => {
       console.log(error);
     }
   };
-  if (!currentUser) {
-    navigate("/");
-  }
 
   const getUser = async () => {
     try {
@@ -105,7 +103,10 @@ const App = () => {
   }, []);
   useEffect(() => {
     getUser();
-  }, [currentUser]);
+    if (!currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, routeState]);
   useEffect(() => {
     setRouteState(location.pathname);
   }, [routeState, location.pathname]);
@@ -169,13 +170,18 @@ const App = () => {
                   </div> */}
 
                       <div className="mt-8 text-center">
-                        <img src={logo} alt="" width={180} />
-                        <h5 className="mt-4 hidden text-4xl font-semibold text-gray-600 lg:block dark:text-gray-300">
-                          DRF
+                        <img
+                          className="flex justify-center m-auto"
+                          src={logo}
+                          alt=""
+                          width={180}
+                        />
+                        {/* <h5 className="mt-4 hidden text-4xl font-bold text-red-600 lg:block dark:text-gray-300">
+                          Done Right Food
                         </h5>
-                        <span className="hidden text-gray-400 lg:block">
+                        <span className="hidden text-black-600 font-bold lg:block text-2xl">
                           School Ordering Portal
-                        </span>
+                        </span> */}
                       </div>
 
                       <ul className="mt-8 space-y-2 tracking-wide">
@@ -490,7 +496,7 @@ const App = () => {
                                   />
                                 </svg>
                                 <span className="group-hover:text-gray-700 dark:group-hover:text-gray-50">
-                                  Pending Orders
+                                  Pending Items
                                 </span>
                               </a>
                             </li>
@@ -525,6 +531,40 @@ const App = () => {
                                 </svg>
                                 <span className="group-hover:text-gray-700 dark:group-hover:text-gray-50">
                                   Orders
+                                </span>
+                              </a>
+                            </li>
+                            <li>
+                              <a
+                                onClick={() => {
+                                  navigate("/rejected-orders");
+                                  setMl();
+                                }}
+                                className={
+                                  routeState == "/rejected-orders"
+                                    ? "relative flex cursor-pointer items-center space-x-4 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-400 px-4 py-3 text-white"
+                                    : "group flex items-center space-x-4 cursor-pointer rounded-md px-4 py-3 text-gray-600 dark:text-gray-300"
+                                }
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    className="fill-current text-gray-600 group-hover:text-cyan-600 dark:group-hover:text-sky-400"
+                                    fillRule="evenodd"
+                                    d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z"
+                                    clipRule="evenodd"
+                                  />
+                                  <path
+                                    className="fill-current text-gray-300 group-hover:text-cyan-300"
+                                    d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"
+                                  />
+                                </svg>
+                                <span className="group-hover:text-gray-700 dark:group-hover:text-gray-50">
+                                  Rejected Items
                                 </span>
                               </a>
                             </li>
@@ -615,7 +655,7 @@ const App = () => {
                     </div>
                   </aside>
 
-                  <div className="ml-auto mb-6 lg:w-[75%] xl:w-[80%] 2xl:w-[83%]">
+                  <div className="ml-auto mb-6 lg:w-[75%] xl:w-[80%] 2xl:w-[83%] w-[100%]">
                     <div
                       className={
                         window.innerWidth < 768
@@ -770,7 +810,7 @@ const App = () => {
                     </div>
                   </div> */}
                     </div>
-                    <div className="px-6 pt-6 2xl:container bg-white">
+                    <div className="px-6 pt-6 5xl:container bg-white">
                       <div className="h-[85vh]  rounded-xl   ">
                         <Routes>
                           <Route
@@ -947,6 +987,14 @@ const App = () => {
                             element={
                               <PrivateRoute>
                                 <OrderPending />
+                              </PrivateRoute>
+                            }
+                          />
+                          <Route
+                            path="/rejected-orders"
+                            element={
+                              <PrivateRoute>
+                                <RejectedOrder />
                               </PrivateRoute>
                             }
                           />

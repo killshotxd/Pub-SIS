@@ -41,3 +41,7 @@ label {
   z-index: -1; /* Behind the content */
   pointer-events: none; /* Allow clicking through the watermark */
 }
+
+.z-10 {
+  z-index: 80;
+}
